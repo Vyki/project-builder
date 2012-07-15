@@ -3,13 +3,14 @@
 """
 Spyder Editor
 """
-import os
+import os, sys
 
 def sinput(text):
     text = raw_input(text)    
     if text == 'exit': exit()
     return text
     
+options = sys.argv
 projectsDir = None
 gitExists = False
 
@@ -31,15 +32,32 @@ else:
         exit("Operation failed: cannot create project dir")
 
 if os.path.exists(projectDir + "/index.html") == False:
-    file = open(projectDir + "/index.html", "w")
-    file.write("<html>\n<head>\n<title>" + projectName +"</title>\n</head>\n<body>\n<h1>Hello " + projectName + "</h1>\n</body>\n</html>\n")
-    file.close() 
+    try:
+        hfile = open(projectDir + "/index.html", "w")
+    except IOError:
+        print('Cannot create index.html file!')
+    else:
+        hfile.write("<html>\n<head>\n<title>" + projectName +"</title>\n</head>\n<body>\n<h1>Hello " + projectName + "</h1>\n</body>\n</html>\n")
+        hfile.close() 
 
+if('git' in options or 'git-ftp' in options):    
+    if os.path.exists(projectDir + "/.git"):
+        print("Git repository already exists")
+    else:
+        os.system("git init " + projectDir)
+        
+if('git-ftp' in options):  
+    gFtpLoc = sinput("FTP location: ")
+    gFtpUser = sinput("FTP user: ")
+    gFtpPass = sinput("FTP password: ")
     
-if os.path.exists(projectDir + "/.git"):
-    print("Git repository already exists")
-else:
-    os.system("git init " + projectDir)
+    try:
+        hfile = open(projectDir + "/.git/config", "a")
+    except IOError:
+        print('Cannot open project git configuration file!')
+    else:
+        hfile.write("[git-ftp]\n\tuser = " + gFtpUser + "\n\tpassword = " + gFtpPass+ "\n\turl = " + gFtpLoc + "\n")
+        hfile.close()    
     
 os.system("firefox " + projectDomain)
 
